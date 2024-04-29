@@ -5,10 +5,8 @@ import com.auth.Authentication.Entity.Role;
 import com.auth.Authentication.Entity.User;
 import com.auth.Authentication.config.JWTGenerator;
 import com.auth.Authentication.dao.RoleRepository;
-import com.auth.Authentication.dto.AuthResponseDTO;
-import com.auth.Authentication.dto.LoginDto;
-import com.auth.Authentication.dto.RegisterDto;
-import com.auth.Authentication.dto.UnlockAccountDto;
+import com.auth.Authentication.dto.*;
+import com.auth.Authentication.config.OtpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -36,17 +35,21 @@ public class LoginController {
 
     private JWTGenerator jwtGenerator;
 
+    private OtpService otpService;
+
     @Autowired
     public LoginController(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
-                           JWTGenerator jwtGenerator) {
+                           JWTGenerator jwtGenerator,
+                           OtpService otpService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtGenerator=jwtGenerator;
+        this.otpService=otpService;
     }
 
     @PostMapping("login")
@@ -55,7 +58,16 @@ public class LoginController {
            Authentication authentication= authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
            SecurityContextHolder.getContext().setAuthentication(authentication);
            String token="Bearer " + jwtGenerator.generateToken(authentication);
+
+           // Upon successful authentication
+           User user = userRepository.findByUsername(loginDto.getUsername()).get();
+           String otp = otpService.generateOtp(user);
+           System.out.println("otp");
+           otpService.sendOtpEmail(user.getEmail(), otp);
+
            return new ResponseEntity<>(new AuthResponseDTO(token), HttpStatus.OK);
+           //return ResponseEntity.status(HttpStatus.OK).body("OTP has been sent to your email.");
+
        }
        catch (BadCredentialsException e){
            Optional<User> user = userRepository.findByUsername(loginDto.getUsername());
@@ -75,6 +87,31 @@ public class LoginController {
        }
 
     }
+
+    @PostMapping("/validate-otp")
+    public ResponseEntity<?> validateOtp(@RequestBody OtpValidationRequest request) {
+
+        Authentication auth =SecurityContextHolder.getContext().getAuthentication();
+        String  username = auth.getName();
+        User user = userRepository.findByUsername(request.getUsername()).get();
+        if (user.isOtpValid() && user.getOneTimePassword().equals(request.getOtp())) {
+            // OTP is valid
+            String jwtToken = jwtGenerator.createToken(username);
+            return new ResponseEntity<>(new AuthResponseDTO(jwtToken), HttpStatus.OK);
+        } else {
+            // OTP is invalid or expired
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired OTP.");
+        }
+    }
+
+    @PostMapping("/generate-new-otp")
+    public ResponseEntity<?> generateNewOtp(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName()).get();
+        String newOtp = otpService.generateOtp(user);
+        otpService.sendOtpEmail(user.getEmail(), newOtp);
+        return ResponseEntity.ok("New OTP has been sent to your email.");
+    }
+
     @PostMapping("/unlock")
     public ResponseEntity<?> unlockAccount(@RequestBody UnlockAccountDto unlockAccountDto) {
         Optional<User> user = userRepository.findByUsername(unlockAccountDto.getUsername());
@@ -96,6 +133,7 @@ public class LoginController {
 
        User user = new User();
         user.setUsername(registerDto.getUsername());
+        user.setEmail(registerDto.getEmail());
         user.setPassword(passwordEncoder.encode((registerDto.getPassword())));
 
         Role roles= roleRepository.findByName("USER").get();

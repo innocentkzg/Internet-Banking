@@ -1,6 +1,7 @@
 package com.auth.Authentication.config;
 
 
+import com.auth.Authentication.Entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -29,6 +30,18 @@ public class JWTGenerator {
                 .signWith(SignatureAlgorithm.HS512, com.auth.Authentication.config.SecurityConstants.JWT_SECRET)
                 .compact();
         return token;
+    }
+
+    public  String createToken(String username){
+        Date currentDate = new Date();
+        Date expireDate= new Date(currentDate.getTime() + com.auth.Authentication.config.SecurityConstants.JWT_EXPIRATION);
+        String tokenOtp= Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(expireDate)
+                .signWith(SignatureAlgorithm.HS512, com.auth.Authentication.config.SecurityConstants.JWT_SECRET)
+                .compact();
+        return tokenOtp;
     }
 
     public String getUsernameFromJWT(String token){
