@@ -1,5 +1,6 @@
 package com.auth.Authentication.controller;
 
+import com.auth.Authentication.Security.TOTPService;
 import com.auth.Authentication.dao.UserRepository;
 import com.auth.Authentication.Entity.Role;
 import com.auth.Authentication.Entity.User;
@@ -37,19 +38,23 @@ public class LoginController {
 
     private OtpService otpService;
 
+    private TOTPService totpService;
+
     @Autowired
     public LoginController(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
                            JWTGenerator jwtGenerator,
-                           OtpService otpService) {
+                           OtpService otpService,
+                           TOTPService totpService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtGenerator=jwtGenerator;
         this.otpService=otpService;
+        this.totpService=totpService;
     }
 
     @PostMapping("login")
@@ -62,6 +67,8 @@ public class LoginController {
            // Upon successful authentication
            User user = userRepository.findByUsername(loginDto.getUsername()).get();
            String otp = otpService.generateOtp(user);
+           String totp = totpService.generateTotpSecret(user);
+           System.out.println("otp");
            System.out.println("otp");
            otpService.sendOtpEmail(user.getEmail(), otp);
 
@@ -88,6 +95,21 @@ public class LoginController {
 
     }
 
+    @PostMapping("/generate")
+    public String generateTOTP(@RequestBody TOTPRequestDto totpRequestDto) {
+        User user = userRepository.findByUsername(totpRequestDto.getUsername()).get();
+        return totpService.generateTotpSecret(user);
+    }
+
+    @PostMapping("/verify-totp")
+    public ResponseEntity<String> verifyTOTP(@RequestBody TotpValidationRequest request) {
+        User user = userRepository.findByUsername(request.getUsername()).get();
+        if (totpService.verifyTOTP(user, request.getTotp())) {
+            return ResponseEntity.ok("TOTP verification successful");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP");
+        }
+    }
     @PostMapping("/validate-otp")
     public ResponseEntity<?> validateOtp(@RequestBody OtpValidationRequest request) {
 

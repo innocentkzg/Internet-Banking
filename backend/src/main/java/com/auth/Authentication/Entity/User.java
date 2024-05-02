@@ -20,8 +20,12 @@ public class User {
     private Long id;
     @Column(name="username")
     private String username;
+
     @Column(name="email")
     private String email;
+
+    @Column(name="phone_number")
+    private String phoneNumber;
 
     @Column(name="password")
     private String password;
@@ -37,6 +41,9 @@ public class User {
 
     @Column(name = "otp_expiration_time")
     private LocalDateTime otpExpirationTime;
+
+    @Column(name = "totp_secret")
+    private String totpSecret;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles",

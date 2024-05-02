@@ -35,6 +35,7 @@ public class OtpService {
         try {
             // Construct the email
             SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom("senderauthapp@bnr.uat");
             mailMessage.setTo(to);
             mailMessage.setSubject("Your OTP");
             mailMessage.setText("Your OTP is: " + otp + ". It will expire in 5 minutes.");
