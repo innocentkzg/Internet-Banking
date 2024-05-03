@@ -63,7 +63,6 @@ public class LoginController {
            Authentication authentication= authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
            SecurityContextHolder.getContext().setAuthentication(authentication);
            String token="Bearer " + jwtGenerator.generateToken(authentication);
-
            // Upon successful authentication
            User user = userRepository.findByUsername(loginDto.getUsername()).get();
            String otp = otpService.generateOtp(user);
@@ -71,6 +70,7 @@ public class LoginController {
            System.out.println("otp");
            System.out.println("otp");
            otpService.sendOtpEmail(user.getEmail(), otp);
+           otpService.sendOtpSms(user.getPhoneNumber(), otp);
 
            return new ResponseEntity<>(new AuthResponseDTO(token), HttpStatus.OK);
            //return ResponseEntity.status(HttpStatus.OK).body("OTP has been sent to your email.");

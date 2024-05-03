@@ -17,12 +17,8 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
-		<!-- JSON Web Token -->
-		<!--		<dependency>-->
-		<!--			<groupId>io.jsonwebtoken</groupId>-->
-		<!--			<artifactId>jjwt</artifactId>-->
-		<!--			<version>0.9.1</version>-->
-		<!--		</dependency>-->
+
+
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -98,7 +94,12 @@
 			<artifactId>javase</artifactId>
 			<version>3.4.1</version>
 		</dependency>
-<!--		<dependency>-->
+		<dependency>
+			<groupId>com.auth</groupId>
+			<artifactId>Authentication</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!--		<dependency>-->
 <!--			<groupId>org.apache.tomcat.embed</groupId>-->
 <!--			<artifactId>tomcat-embed-core</artifactId>-->
 <!--			<version>9.0.44</version>-->
