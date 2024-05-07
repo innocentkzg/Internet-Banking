@@ -14,11 +14,21 @@ const Login = () => {
     });
   };
 
-  const handleOnSubmit = (evt) => {
+  const handleOnSubmit = async (evt) => {
     evt.preventDefault();
-
     const { username, password } = state;
-    //alert(`You are login with email: ${email} and password: ${password}`);
+    try {
+      const response = await axios.post(
+        "http://localhost:8090/api/auth/login",
+        {
+          username,
+          password,
+        }
+      );
+      console.log(response.data); // Handle registration success
+    } catch (error) {
+      console.error("Login failed:", error); // Handle registration failure
+    }
 
     for (const key in state) {
       setState({
