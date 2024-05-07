@@ -1,6 +1,7 @@
 package com.auth.Authentication.Entity;
 
 
+import com.auth.Authentication.Enums.Second_factor_auth_option;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,6 +45,9 @@ public class User {
 
     @Column(name = "totp_secret")
     private String totpSecret;
+
+    @Enumerated(EnumType.STRING)
+    private Second_factor_auth_option authType;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles",

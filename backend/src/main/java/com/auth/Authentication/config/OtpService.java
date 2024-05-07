@@ -2,6 +2,7 @@ package com.auth.Authentication.config;
 
 import com.auth.Authentication.Entity.User;
 import com.auth.Authentication.dao.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,6 +15,8 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Random;
 
+
+
 @Service
 public class OtpService {
     @Autowired
@@ -24,17 +27,27 @@ public class OtpService {
     @Autowired
     private JavaMailSender mailSender; // Inject the JavaMailSender
 
-    private static final int OTP_VALID_DURATION = 5; // OTP validity time in minutes
-    private static final String SERVICE_URL = "http://172.16.1.142:7003/Sms_Bridge/ProxyService/Sms_Proxy_Service"; // Replace with your actual service URL
+
+
+    @Value("${sms.gateway.url}")
+    private String SERVICE_URL ; // Replace with your actual service URL
+
+//    @Value("${sms.gateway.username}")
+//    private String USERNAME;
+
     private static final String USERNAME = "BNR_ECP";
     private static final String PASSWORD = "Bnrecp123!";
+
+
+//    @Value("{sms.gateway.password}")
+//    private String PASSWORD;
 
     public String generateOtp(User user) {
 
         String otp = String.format("%06d", new Random().nextInt(999999));
         System.out.println(otp);
         user.setOneTimePassword(otp);
-        user.setOtpExpirationTime(LocalDateTime.now().plusMinutes(OTP_VALID_DURATION));
+        user.setOtpExpirationTime(LocalDateTime.now().plusMinutes(com.auth.Authentication.config.SecurityConstants.OTP_VALID_DURATION));
         userRepository.save(user);
         return otp;
     }
@@ -96,8 +109,8 @@ public class OtpService {
                 "<sms:SendSMS>" +
                 "<sms:number>" + phoneNumber + "</sms:number>" +
                 "<sms:text>Your OTP is: " + otp + ". It will expire in 5 minutes.</sms:text>" +
-                "<sms:sms_title>Bnr OTP</sms:sms_title>" +
-                "<sms:sms_id>96</sms:sms_id>" +
+                "<sms:sms_title>Bnr OTP</sms:sms_title>"+
+                "<sms:sms_id>97</sms:sms_id>" +
                 "<sms:lgn>" + USERNAME + "</sms:lgn>" +
                 "<sms:pwd>" + PASSWORD + "</sms:pwd>" +
                 "</sms:SendSMS>" +
