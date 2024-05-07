@@ -1,5 +1,6 @@
 package com.auth.Authentication.controller;
 
+import com.auth.Authentication.Enums.Second_factor_auth_option;
 import com.auth.Authentication.Security.TOTPService;
 import com.auth.Authentication.dao.UserRepository;
 import com.auth.Authentication.Entity.Role;
@@ -68,10 +69,11 @@ public class LoginController {
            String otp = otpService.generateOtp(user);
            String totp = totpService.generateTotpSecret(user);
            System.out.println("otp");
-           System.out.println("otp");
-           otpService.sendOtpEmail(user.getEmail(), otp);
-           otpService.sendOtpSms(user.getPhoneNumber(), otp);
-
+           if (user.getAuthType() == Second_factor_auth_option.Phone) {
+               otpService.sendOtpSms(user.getPhoneNumber(), otp);
+           } else {
+               otpService.sendOtpEmail(user.getEmail(), otp);
+           }
            return new ResponseEntity<>(new AuthResponseDTO(token), HttpStatus.OK);
            //return ResponseEntity.status(HttpStatus.OK).body("OTP has been sent to your email.");
 
@@ -156,6 +158,8 @@ public class LoginController {
        User user = new User();
         user.setUsername(registerDto.getUsername());
         user.setEmail(registerDto.getEmail());
+        user.setPhoneNumber(registerDto.getPhoneNumber());
+        user.setAuthType(registerDto.getAuthType());
         user.setPassword(passwordEncoder.encode((registerDto.getPassword())));
 
         Role roles= roleRepository.findByName("USER").get();
