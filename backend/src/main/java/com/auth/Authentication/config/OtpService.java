@@ -97,7 +97,7 @@ public class OtpService {
                 "<sms:number>" + phoneNumber + "</sms:number>" +
                 "<sms:text>Your OTP is: " + otp + ". It will expire in 5 minutes.</sms:text>" +
                 "<sms:sms_title>Bnr OTP</sms:sms_title>" +
-                "<sms:sms_id>92</sms:sms_id>" +
+                "<sms:sms_id>96</sms:sms_id>" +
                 "<sms:lgn>" + USERNAME + "</sms:lgn>" +
                 "<sms:pwd>" + PASSWORD + "</sms:pwd>" +
                 "</sms:SendSMS>" +
